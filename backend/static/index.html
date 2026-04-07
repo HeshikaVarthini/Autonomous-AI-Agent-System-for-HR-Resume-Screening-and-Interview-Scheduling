@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Google Form Auto-Watcher — HR tool to automatically track form responses and download resumes." />
+    <title>FormWatcher — Auto Resume Downloader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #08080f;
+            --bg-card: #0f0f1a;
+            --bg-input: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.06);
+            --text: rgba(255, 255, 255, 0.88);
+            --text2: rgba(255, 255, 255, 0.5);
+            --text3: rgba(255, 255, 255, 0.22);
+            --accent: #6366f1;
+            --accent-soft: rgba(99, 102, 241, 0.15);
+            --accent-text: rgba(165, 168, 255, 0.9);
+            --green: #34d399;
+            --red: #ef4444;
+            --yellow: #fbbf24;
+        }
+
+        html,
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+        }
+
+        /* animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.3
+            }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .spin {
+            animation: spin 0.8s linear infinite;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* layout */
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* header */
+        .header {
+            padding: 40px 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0e7ff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 4px;
+        }
+
+        /* hero */
+        .hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+        }
+
+        .hero-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.3));
+        }
+
+        .hero h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.35);
+            line-height: 1.7;
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+
+        .steps-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px 18px;
+            max-width: 180px;
+            text-align: center;
+        }
+
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .step-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.5;
+        }
+
+        .step-arrow {
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 20px;
+            margin-top: 28px;
+        }
+
+        .cta-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            color: #c7d2fe;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cta-btn:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(139, 92, 246, 0.3));
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+
+        /* add job bar */
+        .add-section {
+            padding: 24px 0 8px;
+        }
+
+        .add-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .add-input:focus {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .add-btn {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            transition: all 0.2s;
+            white-space: nowrap;
+            background: rgba(99, 102, 241, 0.2);
+            color: rgba(165, 168, 255, 0.9);
+        }
+
+        .add-btn:disabled {
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+        }
+
+        /* job cards */
+        .jobs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px 0 40px;
+            flex: 1;
+        }
+
+        .job-card {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 18px;
+            padding: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .job-card:hover {
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .job-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .job-meta {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.15);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+            display: block;
+        }
+
+        .remove-btn {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-radius: 8px;
+            color: rgba(252, 165, 165, 0.6);
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.15s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: rgba(252, 165, 165, 0.9);
+        }
+
+        /* form watcher card */
+        .fw-card {
+            background: #0f0f1a;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 580px;
+        }
+
+        .fw-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.2);
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 16px;
+        }
+
+        .fw-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .fw-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .fw-input:focus {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .fw-textarea {
+            width: 100%;
+            min-height: 90px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+        }
+
+        .fw-textarea:focus {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .fw-btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            transition: all 0.15s;
+            white-space: nowrap;
+            background: rgba(99, 102, 241, 0.2);
+            color: rgba(165, 168, 255, 0.9);
+        }
+
+        .fw-btn:disabled {
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .fw-hint {
+            margin-top: 10px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.18);
+        }
+
+        .fw-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+        }
+
+        .fw-checkbox input {
+            cursor: pointer;
+        }
+
+        .fw-err {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.18);
+            border-radius: 8px;
+            color: rgba(252, 165, 165, 0.85);
+            font-size: 12px;
+        }
+
+        .fw-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 13px;
+            padding: 8px 0;
+        }
+
+        .fw-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .fw-watch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .live-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            display: inline-block;
+            box-shadow: 0 0 6px #34d399;
+        }
+
+        .live-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 500;
+        }
+
+        .fw-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .small-btn {
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .small-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .small-btn-red {
+            padding: 4px 10px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-radius: 6px;
+            color: rgba(252, 165, 165, 0.7);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .small-btn-red:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .info-grid {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            padding: 4px 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .info-val {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .info-val.bold {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .info-val.accent {
+            color: #34d399;
+        }
+
+        .info-val a {
+            color: #818cf8;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .info-val a:hover {
+            text-decoration: underline;
+        }
+
+        .col-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.2);
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag {
+            padding: 3px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tag.accent {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            color: rgba(165, 168, 255, 0.8);
+        }
+
+        .fw-warn {
+            margin-top: 8px;
+            font-size: 11px;
+            color: rgba(251, 191, 36, 0.7);
+            padding: 6px 10px;
+            background: rgba(251, 191, 36, 0.05);
+            border: 1px solid rgba(251, 191, 36, 0.12);
+            border-radius: 6px;
+        }
+
+        /* responses log */
+        .responses-section {
+            margin-top: 16px;
+        }
+
+        .responses-title {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.2);
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .response-item {
+            background: rgba(52, 211, 153, 0.04);
+            border: 1px solid rgba(52, 211, 153, 0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 6px;
+        }
+
+        .response-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .response-detail {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.3);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .response-resume {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #34d399;
+            margin-top: 4px;
+        }
+
+        /* footer */
+        .footer {
+            padding: 20px 0 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.12);
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page" id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-row">
+                <div class="logo-dot"></div>
+                <h1 class="logo-text">FormWatcher</h1>
+            </div>
+            <p class="subtitle">Automated Google Form response tracking & resume downloader</p>
+        </header>
+
+        <!-- Hero (shown when no jobs) -->
+        <div id="hero" class="hero slide-up">
+            <div class="hero-icon">📋</div>
+            <h2>Watch Google Forms Automatically</h2>
+            <p>Paste a Google Form link for any job opening. The system will automatically detect new responses and
+                download candidate resumes in real-time.</p>
+            <div class="steps-row">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <p class="step-text">Create a job & paste your Google Form link</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <p class="step-text">System connects to the linked response sheet</p>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <p class="step-text">Resumes are auto-downloaded on every submission</p>
+                </div>
+            </div>
+            <button class="cta-btn" onclick="showAddBar()">+ Add Your First Job</button>
+        </div>
+
+        <!-- Add job bar -->
+        <div id="add-section" class="add-section" style="display:none;">
+            <div class="add-row">
+                <input id="job-title-input" class="add-input"
+                    placeholder="Job title (e.g. Senior Developer, Marketing Intern)"
+                    onkeydown="if(event.key==='Enter')addJob()" />
+                <button class="add-btn" onclick="addJob()">+ Add Job</button>
+            </div>
+        </div>
+
+        <!-- Jobs list -->
+        <div id="jobs-list" class="jobs-list"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span class="footer-text">Data Wrangling Project — Semester 8</span>
+            <div style="margin-top:8px;font-size:12px;">
+                <a href="/docs" target="_blank" rel="noreferrer" style="color:rgba(129,140,248,0.9);text-decoration:none;">API docs (Swagger)</a>
+                &nbsp;·&nbsp;
+                <a href="/api/forms" target="_blank" rel="noreferrer" style="color:rgba(129,140,248,0.9);text-decoration:none;">Forms API</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const API = window.location.origin + "/api";
+        const jobs = {};       // { jobId: { title, createdAt, phase, info, errMsg, url, intervalId } }
+        const responses = {};  // { jobId: [ {name, email, ...}, ... ] }
+
+        // Check Forms API on load; show banner if unreachable (e.g. opened as file or backend not running)
+        (function checkFormsApi() {
+            fetch(API + "/forms").then(r => r.json()).then(d => {
+                if (d && d.ok) return;
+                showApiBanner();
+            }).catch(() => showApiBanner());
+        })();
+        function showApiBanner() {
+            const el = document.createElement("div");
+            el.id = "api-banner";
+            el.style.cssText = "position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;padding:10px 20px;text-align:center;z-index:9999;font-size:14px;";
+            el.innerHTML = "Forms API not reachable. Start the backend (run <b>run.bat</b> from the backend folder) and open this page at <a href='http://localhost:8000' style='color:#fff;text-decoration:underline'>http://localhost:8000</a>";
+            document.body.prepend(el);
+        }
+
+        function showAddBar() {
+            document.getElementById("hero").style.display = "none";
+            document.getElementById("add-section").style.display = "block";
+            document.getElementById("job-title-input").focus();
+        }
+
+        function addJob() {
+            const input = document.getElementById("job-title-input");
+            const title = input.value.trim();
+            if (!title) return;
+
+            const id = "job_" + Date.now();
+            jobs[id] = {
+                title,
+                createdAt: new Date().toLocaleString(),
+                phase: "idle",
+                info: null,
+                errMsg: "",
+                url: "",
+                jobDescription: "",
+                intervalId: null,
+                downloadExisting: false,
+            };
+            responses[id] = [];
+            input.value = "";
+
+            document.getElementById("hero").style.display = "none";
+            document.getElementById("add-section").style.display = "block";
+            renderJobs();
+        }
+
+        function removeJob(id) {
+            if (jobs[id].intervalId) clearInterval(jobs[id].intervalId);
+            // Try to stop watcher on server
+            fetch(`${API}/forms/watch/${id}`, { method: "DELETE" }).catch(() => { });
+            delete jobs[id];
+            delete responses[id];
+            if (Object.keys(jobs).length === 0) {
+                document.getElementById("hero").style.display = "";
+                document.getElementById("add-section").style.display = "none";
+            }
+            renderJobs();
+        }
+
+        async function connectForm(id) {
+            const job = jobs[id];
+            const url = job.url.trim();
+            if (!url) return;
+
+            job.phase = "loading";
+            job.errMsg = "";
+            renderJobs();
+
+            try {
+                const r = await fetch(`${API}/forms/watch`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        form_url: url,
+                        job_id: id,
+                        download_existing: job.downloadExisting || false,
+                        job_description: (job.jobDescription || "").trim(),
+                    }),
+                });
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.detail || "Failed to connect");
+
+                job.info = data;
+                job.phase = "watching";
+
+                // Start polling status every 10 seconds
+                job.intervalId = setInterval(() => refreshStatus(id), 10000);
+            } catch (e) {
+                job.errMsg = e.message;
+                job.phase = "error";
+            }
+            renderJobs();
+        }
+
+        async function disconnectForm(id) {
+            const job = jobs[id];
+            if (job.intervalId) clearInterval(job.intervalId);
+            await fetch(`${API}/forms/watch/${id}`, { method: "DELETE" }).catch(() => { });
+            job.phase = "idle";
+            job.info = null;
+            job.url = "";
+            renderJobs();
+        }
+
+        async function pollNow(id) {
+            await fetch(`${API}/forms/poll-now/${id}`, { method: "POST" }).catch(() => { });
+            setTimeout(() => refreshStatus(id), 1000);
+        }
+
+        async function downloadExisting(id) {
+            try {
+                const r = await fetch(`${API}/forms/download-existing/${id}`, { method: "POST" });
+                const data = await r.json();
+                if (data.processed > 0) {
+                    alert("Downloaded " + data.processed + " resume(s). Check backend/uploads/ folder.");
+                }
+                refreshStatus(id);
+            } catch (e) {
+                alert("Failed: " + e.message);
+            }
+        }
+
+        async function checkInterviewResponses() {
+            try {
+                const r = await fetch(`${API}/forms/check-interview-responses`, { method: "POST" });
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.detail || "Failed");
+                if (data.rescheduled > 0) {
+                    alert("Checked " + data.checked + " interview(s). Rescheduled " + data.rescheduled + " (candidate had declined — new invite sent).");
+                } else if (data.checked > 0) {
+                    alert("Checked " + data.checked + " interview(s). No declines needing reschedule.");
+                } else {
+                    alert("No scheduled interviews to check.");
+                }
+            } catch (e) {
+                alert("Failed: " + e.message);
+            }
+        }
+
+        async function refreshStatus(id) {
+            try {
+                const r = await fetch(`${API}/forms/watchers`);
+                const list = await r.json();
+                const w = list.find(x => x.job_id === id);
+                if (w && jobs[id]) {
+                    jobs[id].info = { ...jobs[id].info, ...w };
+                    renderJobs();
+                }
+            } catch { }
+        }
+
+        function setUrl(id, val) {
+            if (!jobs[id]) return;
+            jobs[id].url = val;
+            renderJobs();
+            const container = document.getElementById("jobs-list");
+            const card = container.querySelector("[data-job-id=\"" + id + "\"]");
+            if (card) {
+                const inp = card.querySelector(".fw-input");
+                if (inp) inp.focus();
+            }
+        }
+
+        // ── Render ────────────────────────────────────────────────────────────
+        function renderJobs() {
+            const container = document.getElementById("jobs-list");
+            container.innerHTML = "";
+
+            for (const [id, job] of Object.entries(jobs)) {
+                const card = document.createElement("div");
+                card.className = "job-card slide-up";
+                card.setAttribute("data-job-id", id);
+
+                let watcherHTML = "";
+
+                if (job.phase === "idle" || job.phase === "error") {
+                    watcherHTML = `
+          <div class="fw-card">
+            <div class="fw-label">JOB SKILLS (resumes will be scored against these)</div>
+            <textarea class="fw-textarea" placeholder="e.g. Python, SQL, 3 years experience, communication skills. Resumes will be parsed and scored against these skills (LLM or keyword)." rows="4"
+              oninput="jobs['${id}'].jobDescription=this.value; renderJobs();">${esc(job.jobDescription || '')}</textarea>
+            <div class="fw-label" style="margin-top:16px">GOOGLE FORM LINK — ${esc(job.title)}</div>
+            <div class="fw-row">
+              <input class="fw-input" placeholder="https://docs.google.com/forms/d/XXXX/edit (use EDIT link, not Send/Preview)" value="${esc(job.url)}"
+                oninput="setUrl('${id}', this.value)"
+                onkeydown="if(event.key==='Enter')connectForm('${id}')" />
+              <button class="fw-btn" onclick="connectForm('${id}')" ${job.url.trim() ? '' : 'disabled'}>Connect →</button>
+            </div>
+            <label class="fw-checkbox">
+              <input type="checkbox" ${job.downloadExisting ? 'checked' : ''} onchange="jobs['${id}'].downloadExisting=this.checked; renderJobs();" />
+              Download resumes for existing responses too (when connecting)
+            </label>
+            ${job.phase === "error" ? `<div class="fw-err">❌ ${esc(job.errMsg)}</div>` : ""}
+            <div class="fw-hint">Use the form <strong>EDIT</strong> link (open your form in Google Forms and copy the URL from the address bar — it should end with /edit). Do not use the link from Send or Preview.</div>
+          </div>`;
+                } else if (job.phase === "loading") {
+                    watcherHTML = `
+          <div class="fw-card">
+            <div class="fw-label">GOOGLE FORM LINK — ${esc(job.title)}</div>
+            <div class="fw-loading">
+              <span class="fw-spinner spin"></span>
+              Connecting to form...
+            </div>
+          </div>`;
+                } else if (job.phase === "watching" && job.info) {
+                    const info = job.info;
+                    const lastChecked = info.last_checked
+                        ? new Date(info.last_checked).toLocaleTimeString()
+                        : "pending...";
+
+                    let colsHTML = "";
+                    if (info.columns_detected) {
+                        const tags = Object.keys(info.columns_detected).map(k =>
+                            `<span class="tag ${k === 'resume' ? 'accent' : ''}">${esc(k)}</span>`
+                        ).join("");
+                        let warnings = "";
+                        if (!info.columns_detected.resume) {
+                            warnings += `<div class="fw-warn">⚠ No file upload column detected. Make sure your form has a "File Upload" question for resumes.</div>`;
+                        }
+                        if (!info.columns_detected.email) {
+                            warnings += `<div class="fw-warn">⚠ No email column detected. Add a question titled "Email" or "Email address" so we can send the calendar invite to the candidate (we don't need access to their calendar).</div>`;
+                        }
+                        colsHTML = `
+            <div style="margin-top:12px">
+              <div class="col-label">Auto-detected fields</div>
+              <div class="tags">${tags}</div>
+              ${warnings}
+            </div>`;
+                    }
+
+                    watcherHTML = `
+          <div class="fw-card">
+            <div class="fw-label">GOOGLE FORM LINK — ${esc(job.title)}</div>
+            <div class="fw-watch-header">
+              <div class="live-row">
+                <span class="live-dot pulse"></span>
+                <span class="live-text">Live — watching for responses</span>
+              </div>
+              <div class="fw-actions">
+                <button class="small-btn" onclick="downloadExisting('${id}')" title="Download resumes for all existing rows in the sheet">Download existing</button>
+                <button class="small-btn" onclick="pollNow('${id}')">Check now</button>
+                <button class="small-btn" onclick="checkInterviewResponses()" title="If any candidate declined, reschedule to a new slot and send new invite">Check responses</button>
+                <button class="small-btn-red" onclick="disconnectForm('${id}')">Disconnect</button>
+              </div>
+            </div>
+            <div class="info-grid">
+              <div class="info-row">
+                <span class="info-label">Form</span>
+                <span class="info-val bold">${esc(info.form_title || '')}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Existing responses</span>
+                <span class="info-val">${info.existing_responses ?? 0}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">New responses found</span>
+                <span class="info-val accent">${info.total_processed ?? 0}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Last checked</span>
+                <span class="info-val">${esc(lastChecked)}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Response sheet</span>
+                <span class="info-val"><a href="${esc(info.sheet_url || '#')}" target="_blank" rel="noreferrer">Open Sheet ↗</a></span>
+              </div>
+            </div>
+            ${colsHTML}
+            ${info.last_error ? `<div class="fw-err">⚠ Last error: ${esc(info.last_error)}</div>` : ""}
+          </div>`;
+                }
+
+                card.innerHTML = `
+        <div class="job-header">
+          <div>
+            <h3 class="job-title">${esc(job.title)}</h3>
+            <span class="job-meta">${esc(id)} • created ${esc(job.createdAt)}</span>
+          </div>
+          <button class="remove-btn" onclick="removeJob('${id}')">✕</button>
+        </div>
+        ${watcherHTML}
+      `;
+                container.appendChild(card);
+            }
+        }
+
+        function esc(str) {
+            if (str == null) return "";
+            const div = document.createElement("div");
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+    </script>
+
+</body>
+
+</html>

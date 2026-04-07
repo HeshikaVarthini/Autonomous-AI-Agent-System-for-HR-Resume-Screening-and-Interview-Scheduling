@@ -1,0 +1,24 @@
+# Environment and secrets (never commit)
+.env
+backend/.env
+*.env.local
+backend/credentials.json
+backend/token.json
+
+# Candidate data (local only)
+backend/uploads/*
+!backend/uploads/README.txt
+backend/upload_results/*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

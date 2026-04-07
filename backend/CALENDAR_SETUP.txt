@@ -1,0 +1,22 @@
+For scheduled meetings to appear on your (HR) Google Calendar, you must:
+
+1. Enable Google Calendar API
+   - Go to: https://console.cloud.google.com
+   - Your project → APIs & Services → Library
+   - Search "Google Calendar API" → Enable
+
+2. Add Calendar scopes to OAuth consent screen
+   - APIs & Services → OAuth consent screen → Edit app
+   - Under "Scopes" → Add or remove scopes
+   - Find "Google Calendar API" and add:
+     • "See, edit, share, and permanently delete all the calendars..." (or at least "View and edit events")
+     • "See availability on your calendars" (or "View availability")
+   - Save
+
+3. Get a new token that includes Calendar
+   - Delete the file: backend/token.json
+   - Run run.bat again (or connect a form again)
+   - When the browser opens, sign in and allow access to Calendar when asked
+   - After that, new interviews will be created on your calendar and will be visible at calendar.google.com
+
+If you get "invalid_scope" when connecting, you skipped step 2 — add the scopes in the OAuth consent screen, then delete token.json and try again.
